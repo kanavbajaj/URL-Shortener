@@ -4,10 +4,11 @@ const mongoose = require('mongoose')
 const ShortUrl = require('./models/shortUrl')
 const app = express()
 
-const mongoUri = process.env.MONGO_URI || 'mongodb+srv://kanav:kanav2004@cluster0.btnltft.mongodb.net/r'
-if (mongoUri.includes('kanav:kanav2004')) {
-  console.warn('Warning: Using hardcoded database credentials. Please set the MONGO_URI environment variable in a .env file.')
+if (!process.env.MONGO_URI) {
+  throw new Error('MONGO_URI is not defined in the environment variables');
 }
+
+const mongoUri = process.env.MONGO_URI
 
 mongoose.connect(mongoUri, {
   useNewUrlParser: true,
