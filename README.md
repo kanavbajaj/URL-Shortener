@@ -2,7 +2,7 @@
 
 A simple and clean URL shortener application built with Node.js, Express, and MongoDB. This project provides a user-friendly interface to create short URLs and track the number of clicks they receive.
 
-**Live Demo:** [Link to your deployed Vercel app]
+**Live Demo:** (https://url-shortener-beryl-three.vercel.app/)
 
 ## Features
 
