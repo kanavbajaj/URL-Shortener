@@ -1,9 +1,15 @@
 const express = require('express')
+require('dotenv').config()
 const mongoose = require('mongoose')
 const ShortUrl = require('./models/shortUrl')
 const app = express()
 
-mongoose.connect('mongodb+srv://kanav:kanav2004@cluster0.btnltft.mongodb.net/r', {
+const mongoUri = process.env.MONGO_URI || 'mongodb+srv://kanav:kanav2004@cluster0.btnltft.mongodb.net/r'
+if (mongoUri.includes('kanav:kanav2004')) {
+  console.warn('Warning: Using hardcoded database credentials. Please set the MONGO_URI environment variable in a .env file.')
+}
+
+mongoose.connect(mongoUri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   serverSelectionTimeoutMS: 5000 
@@ -11,6 +17,7 @@ mongoose.connect('mongodb+srv://kanav:kanav2004@cluster0.btnltft.mongodb.net/r',
 
 app.set('view engine', 'ejs')
 app.use(express.urlencoded({ extended: false }))
+app.use(express.json())
 
 app.get('/', async (req, res) => {
   const shortUrls = await ShortUrl.find()
@@ -31,6 +38,18 @@ app.get('/:shortUrl', async (req, res) => {
   shortUrl.save()
 
   res.redirect(shortUrl.full)
+})
+
+app.post('/api/increment-click', async (req, res) => {
+  const { short } = req.body
+  const shortUrl = await ShortUrl.findOne({ short: short })
+  if (shortUrl) {
+    shortUrl.clicks++
+    await shortUrl.save()
+    res.json({ clicks: shortUrl.clicks })
+  } else {
+    res.sendStatus(404)
+  }
 })
 
 app.listen(process.env.PORT || 5000);

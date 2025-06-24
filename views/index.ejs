@@ -1,39 +1,217 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-  <title>Document</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>URL Shortener</title>
+    <style>
+        body {
+            background-color: #f0f2f5;
+        }
+        .container {
+            max-width: 800px;
+            margin-top: 50px;
+        }
+        .header {
+            background-color: #0d6efd;
+            color: white;
+            padding: 1rem;
+            border-radius: 0.25rem;
+            margin-bottom: 2rem;
+        }
+        .short-url-container {
+            display: flex;
+            align-items: center;
+        }
+        .short-url-link {
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+
+        .checkmark__circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 2;
+            stroke-miterlimit: 10;
+            stroke: #7ac142;
+            fill: none;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+
+        .checkmark {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: inline-block;
+            stroke-width: 2;
+            stroke: #fff;
+            stroke-miterlimit: 10;
+            box-shadow: inset 0px 0px 0px #7ac142;
+            animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+        }
+
+        .checkmark__check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+        }
+
+        @keyframes stroke {
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        @keyframes scale {
+            0%, 100% {
+                transform: none;
+            }
+            50% {
+                transform: scale3d(1.1, 1.1, 1);
+            }
+        }
+
+        @keyframes fill {
+            100% {
+                box-shadow: inset 0px 0px 0px 30px #7ac142;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>URL Shrinker</h1>
-    <form action="/shortUrls" method="POST" class="my-4 form-inline">
-      <label for="fullUrl" class="sr-only">Url</label>
-      <input required placeholder="Url" type="url" name="fullUrl" id="fullUrl" class="form-control col mr-2">
-      <button class="btn btn-success" type="submit">Shrink</button>
-    </form>
-    
-    <table class="table table-striped table-responsive">
-      <thead>
-        <tr>
-          <th>Full URL</th>
-          <th>Short URL</th>
-          <th>Clicks</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% shortUrls.forEach(shortUrl => { %>
-          <tr>
-            <td><a href="<%= shortUrl.full %>"><%= shortUrl.full %></a></td>
-            <td><a href="<%= shortUrl.short %>"><%= shortUrl.short %></a></td>
-            <td><%= shortUrl.clicks %></td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  </div>
+    <div class="container">
+        <div class="header text-center">
+            <h1>URL Shortener</h1>
+        </div>
+
+        <div class="card p-4 mb-4">
+            <form action="/shortUrls" method="POST" id="shortenForm">
+                <div class="input-group">
+                    <input required placeholder="Enter URL to shorten" type="url" name="fullUrl" id="fullUrl" class="form-control form-control-lg">
+                    <button class="btn btn-primary" type="submit" id="shortenBtn">Shorten</button>
+                </div>
+            </form>
+            <div id="successAnimation" style="display: none; text-align: center; margin-top: 20px;">
+                <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                    <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                    <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                </svg>
+            </div>
+        </div>
+
+        <% if (shortUrls.length > 0) { %>
+            <div class="card p-4">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Original URL</th>
+                            <th>Short URL</th>
+                            <th>Clicks</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% shortUrls.forEach(shortUrl => { %>
+                            <tr>
+                                <td><a href="<%= shortUrl.full %>" target="_blank"><%= shortUrl.full %></a></td>
+                                <td>
+                                    <div class="short-url-container">
+                                        <a class="short-url-link" href="/<%= shortUrl.short %>" data-full-url="<%= shortUrl.full %>" data-short-url="<%= shortUrl.short %>" target="_blank"><%= shortUrl.short %></a>
+                                    </div>
+                                </td>
+                                <td data-clicks-id="<%= shortUrl.short %>"><%= shortUrl.clicks %></td>
+                                <td>
+                                    <button class="btn btn-secondary btn-sm" onclick="copyToClipboard('<%= shortUrl.short %>')">Copy</button>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        <% } %>
+    </div>
+
+    <script>
+        function copyToClipboard(text) {
+            const fullUrl = `${window.location.origin}/${text}`;
+            navigator.clipboard.writeText(fullUrl).then(() => {
+                alert('Copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+
+        const shortenForm = document.getElementById('shortenForm');
+        const successAnimation = document.getElementById('successAnimation');
+        const fullUrlInput = document.getElementById('fullUrl');
+        const shortenBtn = document.getElementById('shortenBtn');
+
+        shortenForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const originalButtonText = shortenBtn.innerHTML;
+            shortenBtn.disabled = true;
+            shortenBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Shortening...';
+
+            try {
+                const response = await fetch('/shortUrls', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        fullUrl: fullUrlInput.value
+                    })
+                });
+
+                if (response.ok) {
+                    shortenForm.style.display = 'none';
+                    successAnimation.style.display = 'block';
+
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    alert('Failed to shorten URL. Please try again.');
+                    shortenBtn.disabled = false;
+                    shortenBtn.innerHTML = originalButtonText;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please check the console for details.');
+                shortenBtn.disabled = false;
+                shortenBtn.innerHTML = originalButtonText;
+            }
+        });
+
+        document.querySelectorAll('a.short-url-link').forEach(link => {
+            link.addEventListener('click', function(event) {
+                event.preventDefault();
+                
+                const fullUrl = this.dataset.fullUrl;
+                const shortUrl = this.dataset.shortUrl;
+                const clicksCell = document.querySelector(`td[data-clicks-id="${shortUrl}"]`);
+
+                window.open(fullUrl, '_blank');
+
+                fetch('/api/increment-click', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ short: shortUrl })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.clicks) {
+                        clicksCell.textContent = data.clicks;
+                    }
+                })
+                .catch(error => console.error('Error incrementing clicks:', error));
+            });
+        });
+    </script>
 </body>
 </html>
